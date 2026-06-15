@@ -12,6 +12,12 @@ export function useAuth() {
 
   useEffect(() => {
     let active = true;
+    
+    // Check if middleware redirected us because of missing/invalid token
+    if (typeof window !== "undefined" && window.location.search.includes("expired=1")) {
+      AuthStorageService.logout(); // Clear local storage
+    }
+
     const currentSession = AuthStorageService.getSession();
     Promise.resolve().then(() => {
       if (!active) return;

@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
       if (isApiRoute) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("/login?expired=1", request.url));
     }
     return NextResponse.next();
   }
@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
       if (isApiRoute) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      const response = NextResponse.redirect(new URL("/login", request.url));
+      const response = NextResponse.redirect(new URL("/login?expired=1", request.url));
       response.cookies.delete("token");
       return response;
     }

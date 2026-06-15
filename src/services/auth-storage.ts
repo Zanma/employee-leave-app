@@ -39,13 +39,13 @@ export const AuthStorageService = {
   },
 
   async logout(): Promise<void> {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
+    }
     try {
       await fetch("/api/auth/logout", { method: "POST" });
     } catch (error) {
       console.error("Logout API failed", error);
-    }
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
     }
   },
 
