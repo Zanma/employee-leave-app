@@ -36,8 +36,8 @@ export function useAuth() {
     [router]
   );
 
-  const logout = useCallback(() => {
-    AuthStorageService.logout();
+  const logout = useCallback(async () => {
+    await AuthStorageService.logout();
     setSession(null);
     router.push("/login");
   }, [router]);

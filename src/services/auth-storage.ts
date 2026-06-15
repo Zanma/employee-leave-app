@@ -1,19 +1,30 @@
 import { AuthSession, LoginCredentials } from "@/types";
-import { STORAGE_KEYS, VALID_CREDENTIALS } from "@/constants";
-import { EmployeeStorageService } from "@/services/employee-storage";
+import { STORAGE_KEYS } from "@/constants";
 
 export const AuthStorageService = {
   async login(credentials: LoginCredentials): Promise<boolean> {
-    if (
-      credentials.username === VALID_CREDENTIALS.USERNAME &&
-      credentials.password === VALID_CREDENTIALS.PASSWORD
-    ) {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = await response.json();
+      
       const session: AuthSession = {
-        username: credentials.username,
-        role: "admin",
+        username: data.user.username,
+        role: data.user.role,
         isAuthenticated: true,
         loginAt: new Date().toISOString(),
       };
+      
       if (typeof window !== "undefined") {
         localStorage.setItem(
           STORAGE_KEYS.AUTH_SESSION,
@@ -21,32 +32,18 @@ export const AuthStorageService = {
         );
       }
       return true;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
     }
-
-    const employees = await EmployeeStorageService.getAll();
-    const user = employees.find(
-      (emp) => emp.username === credentials.username && emp.password === credentials.password
-    );
-
-    if (user) {
-      const session: AuthSession = {
-        username: user.username,
-        role: user.role,
-        isAuthenticated: true,
-        loginAt: new Date().toISOString(),
-      };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          STORAGE_KEYS.AUTH_SESSION,
-          JSON.stringify(session)
-        );
-      }
-      return true;
-    }
-    return false;
   },
 
-  logout(): void {
+  async logout(): Promise<void> {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout API failed", error);
+    }
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
     }
